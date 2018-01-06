@@ -79,6 +79,8 @@ struct ovl_priv_data {
 	 * for the overlay before it is enabled in the HW.
 	 */
 	bool enabling;
+
+	enum omap_dss_notify_event requested_events;
 };
 
 struct mgr_priv_data {
@@ -104,6 +106,10 @@ struct mgr_priv_data {
 	bool extra_info_dirty;
 	bool shadow_extra_info_dirty;
 
+	bool in_use;
+
+	enum omap_dss_notify_event requested_events;
+
 	struct omap_video_timings timings;
 	struct dss_lcd_mgr_config lcd_config;
 
@@ -126,6 +132,8 @@ static DECLARE_COMPLETION(extra_updated_completion);
 
 static void dss_register_vsync_isr(void);
 
+static ATOMIC_NOTIFIER_HEAD(dss_notifier_list);
+
 static struct ovl_priv_data *get_ovl_priv(struct omap_overlay *ovl)
 {
 	return &dss_data.ovl_priv_data_array[ovl->id];
@@ -135,6 +143,196 @@ static struct mgr_priv_data *get_mgr_priv(struct omap_overlay_manager *mgr)
 {
 	return &dss_data.mgr_priv_data_array[mgr->id];
 }
+
+/*
+ * A LCD manager's stallmode decides whether it is in manual or auto update. TV
+ * manager is always auto update, stallmode field for TV manager is false by
+ * default
+ */
+static bool ovl_manual_update(struct omap_overlay *ovl)
+{
+	struct mgr_priv_data *mp = get_mgr_priv(ovl->manager);
+
+	return mp->lcd_config.stallmode;
+}
+
+static bool mgr_manual_update(struct omap_overlay_manager *mgr)
+{
+	struct mgr_priv_data *mp = get_mgr_priv(mgr);
+
+	return mp->lcd_config.stallmode;
+}
+
+static int dss_notifier_call_chain(unsigned long val, void *v)
+{
+	return atomic_notifier_call_chain(&dss_notifier_list, val, v);
+}
+
+/**
+ * Check from events which should be fired now.
+ *
+ * @return: list of events that should fire now.
+ */
+static enum omap_dss_notify_event dss_mgr_notify_check(
+		struct omap_overlay_manager *mgr,
+		struct mgr_priv_data *mp,
+		enum omap_dss_notify_event events)
+{
+	if (mgr_manual_update(mgr)) {
+		if (mp->enabled && mp->in_use && mp->info_dirty)
+			events &= ~OMAP_DSS_NOTIFY_GO_MGR;
+
+		if (mp->enabled && mp->in_use)
+			events &= ~OMAP_DSS_NOTIFY_UPDATE_MGR;
+	} else {
+		if (mp->enabled && (mp->info_dirty || mp->shadow_info_dirty))
+			events = OMAP_DSS_NOTIFY_NONE;
+	}
+
+	return events;
+}
+
+static enum omap_dss_notify_event dss_mgr_notify_check_ovl(
+		struct omap_overlay *ovl,
+		struct ovl_priv_data *op,
+		struct mgr_priv_data *mp,
+		enum omap_dss_notify_event events)
+{
+	if (ovl_manual_update(ovl)) {
+		if (mp->enabled && op->enabled
+		    && mp->in_use && op->info_dirty)
+			events &= ~OMAP_DSS_NOTIFY_GO_OVL;
+
+		if (mp->enabled && op->enabled && mp->in_use)
+			events &= ~OMAP_DSS_NOTIFY_UPDATE_OVL;
+	} else {
+		if (mp->enabled && op->enabled
+		    && (op->info_dirty || op->shadow_info_dirty))
+			events = OMAP_DSS_NOTIFY_NONE;
+	}
+
+	return events;
+}
+
+static enum omap_dss_notify_event check_mgr_notify(
+		struct omap_overlay_manager *mgr)
+{
+	struct mgr_priv_data *mp;
+
+	mp = get_mgr_priv(mgr);
+
+	if (mp->requested_events == OMAP_DSS_NOTIFY_NONE)
+		return OMAP_DSS_NOTIFY_NONE;
+
+	return dss_mgr_notify_check(mgr, mp, mp->requested_events);
+}
+
+static enum omap_dss_notify_event check_ovl_notify(
+		struct omap_overlay *ovl)
+{
+	struct ovl_priv_data *op;
+	struct mgr_priv_data *mp;
+
+	op = get_ovl_priv(ovl);
+
+	if (!ovl->manager)
+		return op->requested_events;
+
+	mp = get_mgr_priv(ovl->manager);
+
+	if (op->requested_events == OMAP_DSS_NOTIFY_NONE)
+		return OMAP_DSS_NOTIFY_NONE;
+
+	return dss_mgr_notify_check_ovl(ovl, op, mp, op->requested_events);
+}
+
+static void dss_run_notifiers(void)
+{
+	struct ovl_priv_data *op;
+	struct mgr_priv_data *mp;
+	int i;
+	enum omap_dss_notify_event events;
+
+	for (i = 0; i < omap_dss_get_num_overlay_managers(); i++) {
+		struct omap_overlay_manager *mgr;
+
+		mgr = omap_dss_get_overlay_manager(i);
+
+		events = check_mgr_notify(mgr);
+		if (events == OMAP_DSS_NOTIFY_NONE)
+			continue;
+
+		mp = get_mgr_priv(mgr);
+
+		mp->requested_events &= ~events;
+
+		dss_notifier_call_chain(events,
+					(void *)(long)mgr->id);
+	}
+
+	for (i = 0; i < omap_dss_get_num_overlays(); ++i) {
+		struct omap_overlay *ovl;
+
+		ovl = omap_dss_get_overlay(i);
+
+		events = check_ovl_notify(ovl);
+		if (events == OMAP_DSS_NOTIFY_NONE)
+			continue;
+
+		op = get_ovl_priv(ovl);
+
+		op->requested_events &= ~events;
+
+		dss_notifier_call_chain(events,
+					(void *)(long)ovl->id);
+	}
+}
+
+int omap_dss_request_notify(enum omap_dss_notify_event events,
+			    long value)
+{
+	int r;
+	struct omap_overlay_manager *mgr;
+	struct omap_overlay *ovl;
+
+	if (events & ~(OMAP_DSS_NOTIFY_MASK_MGR | OMAP_DSS_NOTIFY_MASK_OVL))
+		return -EINVAL;
+
+	if (events & OMAP_DSS_NOTIFY_MASK_MGR) {
+		mgr = omap_dss_get_overlay_manager(value);
+		if (!mgr)
+			return -EINVAL;
+		if (!mgr->notify)
+			return -ENOSYS;
+		r = mgr->notify(mgr, events & OMAP_DSS_NOTIFY_MASK_MGR);
+		if (r)
+			return r;
+	}
+	if (events & OMAP_DSS_NOTIFY_MASK_OVL) {
+		ovl = omap_dss_get_overlay(value);
+		if (!ovl)
+			return -EINVAL;
+		if (!ovl->notify)
+			return -ENOSYS;
+		r = ovl->notify(ovl, events & OMAP_DSS_NOTIFY_MASK_OVL);
+		if (r)
+			return r;
+	}
+	return 0;
+}
+EXPORT_SYMBOL(omap_dss_request_notify);
+
+int omap_dss_register_notifier(struct notifier_block *nb)
+{
+	return atomic_notifier_chain_register(&dss_notifier_list, nb);
+}
+EXPORT_SYMBOL(omap_dss_register_notifier);
+
+int omap_dss_unregister_notifier(struct notifier_block *nb)
+{
+	return atomic_notifier_chain_unregister(&dss_notifier_list, nb);
+}
+EXPORT_SYMBOL(omap_dss_unregister_notifier);
 
 static void apply_init_priv(void)
 {
@@ -184,25 +382,6 @@ static void apply_init_priv(void)
 	mp->lcd_config.video_port_width = 24;
 	mp->lcd_config.clock_info.lck_div = 1;
 	mp->lcd_config.clock_info.pck_div = 1;
-}
-
-/*
- * A LCD manager's stallmode decides whether it is in manual or auto update. TV
- * manager is always auto update, stallmode field for TV manager is false by
- * default
- */
-static bool ovl_manual_update(struct omap_overlay *ovl)
-{
-	struct mgr_priv_data *mp = get_mgr_priv(ovl->manager);
-
-	return mp->lcd_config.stallmode;
-}
-
-static bool mgr_manual_update(struct omap_overlay_manager *mgr)
-{
-	struct mgr_priv_data *mp = get_mgr_priv(mgr);
-
-	return mp->lcd_config.stallmode;
 }
 
 static int dss_check_settings_low(struct omap_overlay_manager *mgr,
@@ -942,6 +1121,7 @@ static void dss_apply_irq_handler(void *data, u32 mask)
 	if (!need_isr())
 		dss_unregister_vsync_isr();
 
+	dss_run_notifiers();
 	spin_unlock(&data_lock);
 }
 
