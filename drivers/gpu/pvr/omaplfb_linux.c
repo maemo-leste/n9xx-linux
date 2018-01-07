@@ -43,7 +43,7 @@
 #include "omaplfb.h"
 #include "pvrmodule.h"
 
-#include <plat/display.h>
+#include <video/omapfb_dss.h>
 
 MODULE_SUPPORTED_DEVICE(DEVNAME);
 
@@ -117,10 +117,11 @@ static struct platform_device omaplfb_device = {
 static int __init OMAPLFB_Init(void)
 {
 	int error;
+	enum PVRSRV_ERROR pvr_err = OMAPLFBInit();
 
-	if (OMAPLFBInit() != PVRSRV_OK) {
+	if (pvr_err != PVRSRV_OK) {
 		printk(KERN_WARNING DRIVER_PREFIX
-		       ": OMAPLFB_Init: OMAPLFBInit failed\n");
+		       ": OMAPLFB_Init: OMAPLFBInit failed (%d)\n", pvr_err);
 		return -ENODEV;
 	}
 	error = platform_driver_register(&omaplfb_driver);

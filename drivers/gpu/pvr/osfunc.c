@@ -27,7 +27,6 @@
 #include <linux/version.h>
 #include <linux/io.h>
 #include <asm/page.h>
-#include <asm/system.h>
 #include <linux/mm.h>
 #include <linux/pagemap.h>
 #include <linux/hugetlb.h>
@@ -867,11 +866,18 @@ struct TIMER_CALLBACK_DATA {
 
 static struct TIMER_CALLBACK_DATA sTimers[OS_MAX_TIMERS];
 static DEFINE_SPINLOCK(sTimerStructLock);
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0))
 static void OSTimerCallbackWrapper(unsigned long ui32Data)
 {
 	struct TIMER_CALLBACK_DATA *psTimerCBData =
 					(struct TIMER_CALLBACK_DATA *)ui32Data;
-
+#else
+static void OSTimerCallbackWrapper(struct timer_list *t)
+{
+struct TIMER_CALLBACK_DATA *psTimerCBData =
+		from_timer(psTimerCBData, t, sTimer);
+#endif
 	if (!psTimerCBData->bActive)
 		return;
 
@@ -913,10 +919,14 @@ void *OSAddTimer(void (*pfnTimerFunc)(void *), void *pvData, u32 ui32MsTimeout)
 	psTimerCBData->ui32Delay = ((HZ * ui32MsTimeout) < 1000)
 	    ? 1 : ((HZ * ui32MsTimeout) / 1000);
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)) && !defined(timer_setup)
 	init_timer(&psTimerCBData->sTimer);
 
 	psTimerCBData->sTimer.function = OSTimerCallbackWrapper;
 	psTimerCBData->sTimer.data = (u32) psTimerCBData;
+#else
+	timer_setup(&psTimerCBData->sTimer, OSTimerCallbackWrapper, 0);
+#endif
 	psTimerCBData->sTimer.expires = psTimerCBData->ui32Delay + jiffies;
 
 	return (void *)(ui32i + 1);
@@ -1250,7 +1260,7 @@ enum PVRSRV_ERROR OSReleasePhysPageAddr(void *hOSWrapMem)
 
 				if (!PageReserved(psPage))
 					SetPageDirty(psPage);
-				page_cache_release(psPage);
+				put_page(psPage);
 			}
 			break;
 		}
@@ -1335,10 +1345,19 @@ enum PVRSRV_ERROR OSAcquirePhysPageAddr(void *pvCPUVAddr, u32 ui32Bytes,
 	}
 
 	down_read(&current->mm->mmap_sem);
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)
+	iNumPagesMapped = get_user_pages(ulStartAddr, psInfo->iNumPages, 1,
+					 psInfo->ppsPages, NULL);
+#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 6, 0)
+	iNumPagesMapped = get_user_pages(ulStartAddr, psInfo->iNumPages, 1, 0,
+					 psInfo->ppsPages, NULL);
+#else
 	iNumPagesMapped = get_user_pages(current, current->mm, ulStartAddr,
 					 psInfo->iNumPages, 1, 0,
 					 psInfo->ppsPages, NULL);
+#endif
+#endif
 	up_read(&current->mm->mmap_sem);
 
 
@@ -1350,7 +1369,7 @@ enum PVRSRV_ERROR OSAcquirePhysPageAddr(void *pvCPUVAddr, u32 ui32Bytes,
 			       psInfo->iNumPages, iNumPagesMapped);
 
 			for (i = 0; i < iNumPagesMapped; i++)
-				page_cache_release(psInfo->ppsPages[i]);
+				put_page(psInfo->ppsPages[i]);
 
 			goto error_free;
 		}
@@ -1406,8 +1425,8 @@ enum PVRSRV_ERROR OSAcquirePhysPageAddr(void *pvCPUVAddr, u32 ui32Bytes,
 		goto error_release_mmap_sem;
 	}
 
-	if ((psVMArea->vm_flags & (VM_IO | VM_RESERVED)) !=
-	    (VM_IO | VM_RESERVED)) {
+	if ((psVMArea->vm_flags & (VM_IO | VM_DONTDUMP)) !=
+	    (VM_IO | VM_DONTDUMP)) {
 		PVR_DPF(PVR_DBG_ERROR, "OSAcquirePhysPageAddr: "
 				"Memory region does not represent memory "
 				"mapped I/O (VMA flags: 0x%lx)",

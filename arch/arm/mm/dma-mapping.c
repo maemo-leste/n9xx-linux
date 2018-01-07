@@ -2409,3 +2409,12 @@ void arch_teardown_dma_ops(struct device *dev)
 
 	arm_teardown_iommu_dma_ops(dev);
 }
+
+/* export the cache management functions */
+#ifndef MULTI_CACHE
+
+EXPORT_SYMBOL(__glue(_CACHE,_dma_map_area));
+EXPORT_SYMBOL(__glue(_CACHE,_dma_unmap_area));
+EXPORT_SYMBOL(__glue(_CACHE,_dma_flush_range));
+
+#endif
