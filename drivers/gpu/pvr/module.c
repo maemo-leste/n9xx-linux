@@ -59,6 +59,7 @@
 #endif
 
 #define DRVNAME		"pvrsrvkm"
+#define DEVNAME DRVNAME
 
 #ifdef CONFIG_PVR_DEBUG_EXTRA
 static int debug = DBGPRIV_WARNING;
@@ -199,32 +200,53 @@ err_exit:
 static int __devexit pvr_remove(struct platform_device *pdev)
 {
 	struct SYS_DATA *sysdata;
-	int ret;
+	int ret = 0;
 
 	PVR_TRACE("pvr_remove(pdev=%p)", pdev);
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 2, 0)
+	misc_deregister(&pvr_miscdevice);
+#else
 	ret = misc_deregister(&pvr_miscdevice);
 	if (ret < 0) {
 		dev_err(&pdev->dev, "remove failed (%d)\n", ret);
 		return ret;
 	}
-
+#endif
 	if (SysAcquireData(&sysdata) == PVRSRV_OK)
 		SysDeinitialise(sysdata);
 
-	return 0;
+	return ret;
 }
 
+static const struct of_device_id pvr_of_match[] = {
+	{ .compatible = "ti,pvrsrvkm", },
+	{},
+};
+
+MODULE_DEVICE_TABLE(of, pvr_of_match);
 
 static struct platform_driver pvr_driver = {
 	.driver = {
-		   .name = DRVNAME,
+		.name = DRVNAME,
+		.of_match_table = pvr_of_match,
+
 	},
 	.probe		= pvr_probe,
-	.remove		= __devexit_p(pvr_remove),
+	.remove		= pvr_remove,
 	.suspend	= pvr_suspend,
 	.resume		= pvr_resume,
 	.shutdown	= pvr_shutdown,
+};
+
+static void pvr_device_release(struct device unref__ *dev)
+{
+}
+static struct platform_device pvr_device = {
+	.name			= DEVNAME,
+	.id				= -1,
+	.dev 			= {
+		.release	= pvr_device_release
+	}
 };
 
 static int __init pvr_init(void)
@@ -260,6 +282,13 @@ static int __init pvr_init(void)
 	if (error < 0)
 		goto err4;
 
+	error = platform_device_register(&pvr_device);
+
+	if (error < 0) {
+		platform_driver_unregister(&pvr_driver);
+		goto err4;
+	}
+
 	pvr_init_events();
 
 	return 0;
@@ -283,6 +312,7 @@ static void __exit pvr_cleanup(void)
 
 	pvr_exit_events();
 
+	platform_device_unregister(&pvr_device);
 	platform_driver_unregister(&pvr_driver);
 
 	PVRMMapCleanup();
