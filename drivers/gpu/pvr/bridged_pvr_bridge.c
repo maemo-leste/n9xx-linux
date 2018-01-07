@@ -51,6 +51,8 @@
 #include <linux/mm.h>
 #include <linux/sched.h>
 
+#include <../../../arch/arm/mm/dma.h>
+
 #if defined(DEBUG_BRIDGE_KM)
 struct PVRSRV_BRIDGE_DISPATCH_TABLE_ENTRY
     g_BridgeDispatchTable[BRIDGE_DISPATCH_TABLE_ENTRY_COUNT];

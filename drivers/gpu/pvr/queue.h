@@ -45,7 +45,9 @@ enum PVRSRV_ERROR PVRSRVProcessQueues(IMG_BOOL bFlush);
 
 #if defined(__KERNEL__)
 #include <linux/types.h>
-off_t QueuePrintQueues(char *buffer, size_t size, off_t off);
+#include <linux/fs.h>
+void QueuePrintQueues(struct seq_file *sfile, void* el);
+void *ProcSeqOff2ElementQueue(struct seq_file * sfile, loff_t off);
 #endif
 
 enum PVRSRV_ERROR PVRSRVCreateCommandQueueKM(u32 ui32QueueSize,

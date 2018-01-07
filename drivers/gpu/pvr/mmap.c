@@ -578,7 +578,7 @@ int PVRMMap(struct file *pFile, struct vm_area_struct *ps_vma)
 		goto unlock_and_return;
 	}
 
-	ps_vma->vm_flags |= VM_RESERVED;
+	ps_vma->vm_flags |= VM_DONTDUMP;
 	ps_vma->vm_flags |= VM_IO;
 
 	ps_vma->vm_flags |= VM_DONTEXPAND;
@@ -911,7 +911,9 @@ void PVRMMapCleanup(void)
 	}
 	PVR_ASSERT(list_empty((&g_sMMapAreaList)));
 
+#if defined(DEBUG_LINUX_MMAP_AREAS)
 	RemoveProcEntry("mmap");
+#endif
 
 	if (g_psMemmapCache) {
 		kmem_cache_destroy(g_psMemmapCache);

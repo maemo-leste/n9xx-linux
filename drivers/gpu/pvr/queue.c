@@ -28,10 +28,30 @@
 
 #include "proc.h"
 
-static int QueuePrintCommands(struct PVRSRV_QUEUE_INFO *psQueue, char *buffer,
-			      size_t size)
+void *ProcSeqOff2ElementQueue(struct seq_file * sfile, loff_t off)
 {
-	off_t off = 0;
+	struct PVRSRV_QUEUE_INFO *psQueue = NULL;
+	struct SYS_DATA *psSysData;
+
+	PVR_UNREFERENCED_PARAMETER(sfile);
+
+	if (!off)
+		return PVR_PROC_SEQ_START_TOKEN;
+
+	SysAcquireData(&psSysData);
+
+	if (psSysData)
+	{
+		for (psQueue = psSysData->psQueueList;
+		     (((--off) > 0) && psQueue); psQueue = psQueue->psNextKM);
+	}
+
+	return psQueue;
+}
+
+static void QueuePrintCommands(struct PVRSRV_QUEUE_INFO *psQueue,
+			      struct seq_file *sfile)
+{
 	int cmds = 0;
 	u32 ui32ReadOffset = psQueue->ui32ReadOffset;
 	u32 ui32WriteOffset = psQueue->ui32WriteOffset;
@@ -41,41 +61,42 @@ static int QueuePrintCommands(struct PVRSRV_QUEUE_INFO *psQueue, char *buffer,
 		psCmd = (struct PVRSRV_COMMAND *)((u32) psQueue->pvLinQueueKM +
 					ui32ReadOffset);
 
-		off = printAppend(buffer, size, off,
-			"%p %p  %5u  %6u  %3u  %5u   %2u   %2u    %3u  \n",
-				psQueue, psCmd, psCmd->ui32ProcessID,
-				psCmd->CommandType, psCmd->ui32CmdSize,
-				psCmd->ui32DevIndex, psCmd->ui32DstSyncCount,
-				psCmd->ui32SrcSyncCount, psCmd->ui32DataSize);
+		seq_printf(sfile,
+			   "%p %p  %5u  %6u  %3u  %5u   %2u   %2u    %3u  \n",
+			   psQueue, psCmd, psCmd->ui32ProcessID,
+			   psCmd->CommandType, psCmd->ui32CmdSize,
+			   psCmd->ui32DevIndex, psCmd->ui32DstSyncCount,
+			   psCmd->ui32SrcSyncCount, psCmd->ui32DataSize);
 
 		ui32ReadOffset += psCmd->ui32CmdSize;
 		ui32ReadOffset &= psQueue->ui32QueueSize - 1;
 		cmds++;
 	}
+
 	if (cmds == 0)
-		off = printAppend(buffer, size, off, "%p <empty>\n", psQueue);
-	return off;
+		seq_printf(sfile, "%p <empty>\n", psQueue);
 }
 
-off_t QueuePrintQueues(char *buffer, size_t size, off_t off)
+void QueuePrintQueues(struct seq_file *sfile, void* el)
 {
 	struct SYS_DATA *psSysData;
-	struct PVRSRV_QUEUE_INFO *psQueue;
+	struct PVRSRV_QUEUE_INFO *psQueue = (struct PVRSRV_QUEUE_INFO*)el;
 
-	if (SysAcquireData(&psSysData) != PVRSRV_OK)
-		return END_OF_FILE;
-
-	if (!off)
-		return printAppend(buffer, size, 0,
-			"Command Queues\nQueue    CmdPtr      "
+	if (el == PVR_PROC_SEQ_START_TOKEN)
+	{
+		seq_printf(sfile, "Command Queues\nQueue    CmdPtr      "
 			   "Pid Command Size DevInd  DSC  SSC  #Data ...\n");
 
-	for (psQueue = psSysData->psQueueList; --off && psQueue;
-	     psQueue = psQueue->psNextKM)
-		;
+		return;
+	}
 
-	return psQueue ?
-		QueuePrintCommands(psQueue, buffer, size) : END_OF_FILE;
+	if (SysAcquireData(&psSysData) != PVRSRV_OK)
+		return;
+
+	if (!psQueue)
+		return;
+
+	QueuePrintCommands(psQueue, sfile);
 }
 
 #define GET_SPACE_IN_CMDQ(psQueue)					\

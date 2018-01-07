@@ -27,28 +27,66 @@
 #ifndef __SERVICES_PROC_H__
 #define __SERVICES_PROC_H__
 
-#include <asm/system.h>
 #include <linux/proc_fs.h>
 
 #define END_OF_FILE ((off_t) -1)
+
+typedef int (read_proc_t)(char *page, char **start, off_t off,int count, int *eof, void *data);
+typedef int (write_proc_t)(struct file *file, const char __user *buffer,unsigned long count, void *data);
+
+#define PVR_PROC_SEQ_START_TOKEN (void*)1
+typedef void* (pvr_next_proc_seq_t)(struct seq_file *,void*,loff_t);
+typedef void* (pvr_off2element_proc_seq_t)(struct seq_file *, loff_t);
+typedef void (pvr_show_proc_seq_t)(struct seq_file *,void*);
+typedef void (pvr_startstop_proc_seq_t)(struct seq_file *, IMG_BOOL start);
+
+typedef int (read_proc_t)(char *page, char **start, off_t off,int count, int *eof, void *data);
+typedef int (write_proc_t)(struct file *file, const char __user *buffer,unsigned long count, void *data);
+
+typedef struct _PVR_PROC_SEQ_HANDLERS_ {
+	pvr_next_proc_seq_t *next;
+	pvr_show_proc_seq_t *show;
+	pvr_off2element_proc_seq_t *off2element;
+	pvr_startstop_proc_seq_t *startstop;
+	void *data;
+	read_proc_t *read_proc;
+	write_proc_t *write_proc;
+} PVR_PROC_SEQ_HANDLERS;
 
 off_t printAppend(char *buffer, size_t size, off_t off,
 		  const char *format, ...)
 		  __attribute__ ((format(printf, 4, 5)));
 
 int CreateProcEntries(void);
-int CreateProcReadEntry(const char *name,
-			off_t (handler)(char *, size_t, off_t));
-int CreateProcEntry(const char *name, read_proc_t rhandler,
-		    write_proc_t whandler, void *data);
+struct proc_dir_entry *CreateProcReadEntry(
+		const char* name, void* data,
+		pvr_next_proc_seq_t next_handler,
+		pvr_show_proc_seq_t show_handler,
+		pvr_off2element_proc_seq_t off2element_handler,
+		pvr_startstop_proc_seq_t startstop_handler);
 
-int CreatePerProcessProcEntry(u32 pid, const char *name, read_proc_t rhandler,
-			      void *data);
+struct proc_dir_entry *CreateProcEntry(
+		const char *name, void* data,
+		pvr_next_proc_seq_t next_handler,
+		pvr_show_proc_seq_t show_handler,
+		pvr_off2element_proc_seq_t off2element_handler,
+		pvr_startstop_proc_seq_t startstop_handler,
+		write_proc_t whandler);
+
+struct proc_dir_entry *CreatePerProcessProcEntry(
+		u32 pid, const char *name, void* data,
+		pvr_next_proc_seq_t next_handler,
+		pvr_show_proc_seq_t show_handler,
+		pvr_off2element_proc_seq_t off2element_handler,
+		pvr_startstop_proc_seq_t startstop_handler,
+		write_proc_t whandler);
 
 void RemoveProcEntry(const char *name);
 
 void RemovePerProcessProcEntry(u32 pid, const char *name);
 
 void RemoveProcEntries(void);
+
+void* ProcSeq1ElementHeaderOff2Element(struct seq_file *sfile, loff_t off);
 
 #endif
