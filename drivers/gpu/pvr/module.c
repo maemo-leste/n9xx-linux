@@ -172,7 +172,7 @@ static struct miscdevice pvr_miscdevice = {
 	.fops = &pvr_fops,
 };
 
-static int __devinit pvr_probe(struct platform_device *pdev)
+static int pvr_probe(struct platform_device *pdev)
 {
 	struct SYS_DATA *sysdata;
 	int ret;
@@ -197,7 +197,7 @@ err_exit:
 	return ret;
 }
 
-static int __devexit pvr_remove(struct platform_device *pdev)
+static int pvr_remove(struct platform_device *pdev)
 {
 	struct SYS_DATA *sysdata;
 	int ret = 0;
