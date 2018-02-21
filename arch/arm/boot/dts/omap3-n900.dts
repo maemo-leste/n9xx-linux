@@ -1125,3 +1125,6 @@
 &ssi_port2 {
 	status = "disabled";
 };
+&bq27200 {
+    power-supplies = <&bq24150a>;
+};
