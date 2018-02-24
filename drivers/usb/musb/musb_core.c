@@ -1760,6 +1760,8 @@ musb_vbus_show(struct device *dev, struct device_attribute *attr, char *buf)
 	val = musb->a_wait_bcon;
 	vbus = musb_platform_get_vbus_status(musb);
 	if (vbus < 0) {
+		pm_runtime_get_sync(dev);
+
 		/* Use default MUSB method by means of DEVCTL register */
 		devctl = musb_readb(musb->mregs, MUSB_DEVCTL);
 		if ((devctl & MUSB_DEVCTL_VBUS)
@@ -1767,6 +1769,9 @@ musb_vbus_show(struct device *dev, struct device_attribute *attr, char *buf)
 			vbus = 1;
 		else
 			vbus = 0;
+
+		pm_runtime_put_sync(dev);
+
 	}
 	spin_unlock_irqrestore(&musb->lock, flags);
 
