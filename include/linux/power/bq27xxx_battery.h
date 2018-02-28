@@ -49,6 +49,7 @@ struct bq27xxx_reg_cache {
 	int flags;
 	int power_avg;
 	int health;
+	int status;
 };
 
 struct bq27xxx_device_info {
