@@ -1,0 +1,11 @@
+n9xx-linux (4.15.6-1) unstable; urgency=medium
+
+  * Rebase on 4.15.6
+
+ -- Ivan J. <parazyd@dyne.org>  Wed, 28 Feb 2018 14:47:00 +0100
+
+n9xx-linux (4.15.0-rc6) unstable; urgency=medium
+
+  * Initial packaging
+
+ -- Ivan J. <parazyd@dyne.org>  Mon, 19 Feb 2018 20:20:00 +0100

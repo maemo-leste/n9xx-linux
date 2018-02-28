@@ -1,0 +1,32 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+clean:
+	$(MAKE) clean
+
+build-arch:
+	$(MAKE) rx51_defconfig
+	$(MAKE) zImage modules omap3-n900.dtb
+	cat arch/arm/boot/zImage arch/arm/boot/dts/omap3-n900.dtb > zImage
+
+binary-arch:
+	dh_testdir
+	dh_testroot
+	$(MAKE) INSTALL_MOD_PATH=$(PWD)/debian/linux-image-n900 modules_install
+	mkdir -p debian/linux-image-n900/boot
+	mkimage -A arm -O linux -T kernel -C none \
+		-a 80008000 -e 80008000 -n zImage \
+		-d zImage debian/linux-image-n900/boot/uImage
+	cp zImage debian/linux-image-n900/boot/zImage
+	dh_compress
+	dh_fixperms
+	dh_strip
+	dh_makeshlibs
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+build: build-arch
+
+binary: binary-arch

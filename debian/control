@@ -1,0 +1,12 @@
+Source: n9xx-linux
+Section: n900
+Priority: optional
+Maintainer: Ivan J. <parazyd@dyne.org>
+Standards-Version: 3.9.8
+Build-Depends: debhelper (>= 9), bc, gcc-6, u-boot-tools, libssl-dev
+
+Package: linux-image-n900
+Architecture: armhf armel
+Section: n900
+Depends: kmod, linux-base, ${misc:Depends}
+Description: Linux kernel package for Nokia N900 (4.15)
