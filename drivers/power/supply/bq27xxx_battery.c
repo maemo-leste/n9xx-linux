@@ -84,7 +84,7 @@
 #define BQ27XXX_SOFT_RESET		0x42
 #define BQ27XXX_RESET			0x41
 
-#define BQ27XXX_RS			(30) /* Resistor sense mOhm */
+#define BQ27XXX_RS			(20) /* Resistor sense mOhm */
 #define BQ27XXX_POWER_CONSTANT		(29200) /* 29.2 µV^2 * 1000 */
 #define BQ27XXX_CURRENT_CONSTANT	(3570) /* 3.57 µV * 1000 */
 
