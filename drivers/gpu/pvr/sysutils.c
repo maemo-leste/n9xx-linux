@@ -127,19 +127,27 @@ static int vdd2_pre_func(struct notifier_block *n, unsigned long event,
 	return 0;
 }
 
+/* keep track if we were called with CPUFREQ_PRECHANGE event, otherwise
+   bad things happen in pvr_dev_unlock() */
+static bool vdd2_pre = false;
+
 static int vdd2_pre_post_func(struct notifier_block *n, unsigned long event,
 			      void *ptr)
 {
 	PVR_UNREFERENCED_PARAMETER(n);
 
 	if (CPUFREQ_PRECHANGE == event) {
+		vdd2_pre = true;
 		pvr_dev_lock();
 		PVR_TRACE("vdd2_pre_post_func: CPUFREQ_PRECHANGE event");
 		vdd2_pre_func(n, event, ptr);
 	} else if (CPUFREQ_POSTCHANGE == event) {
 		PVR_TRACE("vdd2_pre_post_func: CPUFREQ_POSTCHANGE event");
-		vdd2_post_func(n, event, ptr);
-		pvr_dev_unlock();
+		if (vdd2_pre) {
+			vdd2_post_func(n, event, ptr);
+			pvr_dev_unlock();
+			vdd2_pre = false;
+		}
 	} else {
 		printk(KERN_ERR "vdd2_pre_post_func: unexpected event (%lu)\n",
 			event);
