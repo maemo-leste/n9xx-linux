@@ -1,0 +1,11 @@
+n9xx-linux (4.15.7-1) unstable; urgency=medium
+
+  * Bump to latest sources
+
+ -- Ivan J. <parazyd@dyne.org>  Fri, 25 Jan 2019 21:51:00 +0100
+
+n9xx-linux (4.15.7-0) unstable; urgency=medium
+
+  * Initial packaging
+
+ -- Ivan J. <parazyd@dyne.org>  Mon, 19 Feb 2018 20:20:00 +0100
