@@ -1,3 +1,9 @@
+n9xx-linux (4.15.7-3) unstable; urgency=medium
+
+  * Bump package revision
+
+ -- Ivan J. <parazyd@dyne.org>  Sat, 26 Jan 2019 18:43:24 +0100
+
 n9xx-linux (4.15.7-1) unstable; urgency=medium
 
   * Bump to latest sources
