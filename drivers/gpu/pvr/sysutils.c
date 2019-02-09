@@ -482,8 +482,10 @@ static enum PVRSRV_ERROR InitSgxClocks(struct SYS_DATA *psSysData)
 	}
 	clk_put(core_ck);
 */
-	/* +1 to account for rounding errors */
-	rate = clk_round_rate(psSysSpecData->psSGX_FCK, sgx_get_max_freq() + 1);
+    /* +1 MHz to account for rounding errors */
+    rate = clk_round_rate(psSysSpecData->psSGX_FCK,
+                          sgx_get_max_freq() + 1000000);
+
 	r = clk_set_rate(psSysSpecData->psSGX_FCK, rate);
 	if (r < 0) {
 		unsigned long current_rate;
