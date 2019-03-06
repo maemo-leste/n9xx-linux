@@ -1145,6 +1145,7 @@ void get_proc_name(int pid, char *buf, size_t buf_size)
 IMG_BOOL OSAccessOK(enum IMG_VERIFY_TEST eVerification,
 		    const void __user *pvUserPtr, u32 ui32Bytes)
 {
+    /*
 	int linuxType;
 
 	if (eVerification == PVR_VERIFY_READ) {
@@ -1153,8 +1154,10 @@ IMG_BOOL OSAccessOK(enum IMG_VERIFY_TEST eVerification,
 		PVR_ASSERT(eVerification == PVR_VERIFY_WRITE);
 		linuxType = VERIFY_WRITE;
 	}
+    */
 
-	return access_ok(linuxType, pvUserPtr, ui32Bytes);
+	return access_ok(pvUserPtr, ui32Bytes);
+	//return access_ok(linuxType, pvUserPtr, ui32Bytes);
 }
 
 enum eWrapMemType {

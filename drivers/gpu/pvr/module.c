@@ -33,6 +33,7 @@
 #include <linux/miscdevice.h>
 
 #include <linux/platform_device.h>
+#include <linux/mod_devicetable.h>
 
 #include "img_defs.h"
 #include "services.h"
