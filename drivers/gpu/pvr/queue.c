@@ -24,6 +24,8 @@
  *
  ******************************************************************************/
 
+#include <linux/seq_file.h>
+
 #include "services_headers.h"
 
 #include "proc.h"

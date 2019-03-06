@@ -41,7 +41,7 @@
 #include "ocpdefs.h"
 #include "pvr_bridge_km.h"
 
-#include "../../../arch/arm/mach-omap2/omap-pm.h"
+//#include "../../../arch/arm/mach-omap2/omap-pm.h"
 #include "../../../arch/arm/mach-omap2/soc.h"
 
 #define	HZ_TO_MHZ(m) ((m) / 1000000)
