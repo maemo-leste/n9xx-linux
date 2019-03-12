@@ -3,7 +3,7 @@ Section: n900
 Priority: optional
 Maintainer: Ivan J. <parazyd@dyne.org>
 Standards-Version: 3.9.8
-Build-Depends: debhelper (>=9), bc, gcc-6, u-boot-tools, libssl-dev, flex, kmod
+Build-Depends: debhelper (>=9), bc, gcc-6, u-boot-tools, libssl-dev, flex, kmod, bison
 
 Package: linux-image-n900
 Architecture: armhf armel
