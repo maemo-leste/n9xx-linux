@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if ischroot; then
+	depmod $(dpkg-query --show --showformat='${Version}' linux-image-n900 | cut -d '+' -f1)
+else
+	depmod -a
+fi

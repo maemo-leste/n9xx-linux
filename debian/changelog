@@ -1,0 +1,29 @@
+n9xx-linux (5.0.0) unstable; urgency=medium
+
+  * Bump to Linux 5.0.y
+
+ -- Ivan J. <parazyd@dyne.org>  Tue, 12 Mar 2019 09:30:16 +0100
+
+n9xx-linux (4.15.7) unstable; urgency=medium
+
+  * Native package format
+
+ -- Ivan J. <parazyd@dyne.org>  Mon, 11 Feb 2019 19:15:51 +0100
+
+n9xx-linux (4.15.7-3) unstable; urgency=medium
+
+  * Bump package revision
+
+ -- Ivan J. <parazyd@dyne.org>  Sat, 26 Jan 2019 18:43:24 +0100
+
+n9xx-linux (4.15.7-1) unstable; urgency=medium
+
+  * Bump to latest sources
+
+ -- Ivan J. <parazyd@dyne.org>  Fri, 25 Jan 2019 21:51:00 +0100
+
+n9xx-linux (4.15.7-0) unstable; urgency=medium
+
+  * Initial packaging
+
+ -- Ivan J. <parazyd@dyne.org>  Mon, 19 Feb 2018 20:20:00 +0100
