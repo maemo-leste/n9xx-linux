@@ -6,7 +6,7 @@ clean:
 
 build:
 	$(MAKE) ARCH=arm rx51_defconfig
-	$(MAKE) ARCH=arm zImage modules omap3-n900.dtb
+	$(MAKE) -j4 ARCH=arm zImage modules omap3-n900.dtb
 	cat arch/arm/boot/zImage arch/arm/boot/dts/omap3-n900.dtb > zImage
 
 binary:
