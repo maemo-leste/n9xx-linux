@@ -9,6 +9,7 @@ Build-Depends:
  flex,
  bison,
  libssl-dev:native,
+ libssl-dev,
  liblz4-tool,
  u-boot-tools,
 Standards-Version: 4.3.0
