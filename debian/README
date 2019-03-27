@@ -1,0 +1,38 @@
+Linux kernel for Maemo Leste
+----------------------------
+
+There are 3 major branches:
+1. Working branch is for patching kernel code.
+2. Config branch adds device specific config.
+3. Build branch adds 'debian' subdirectory.
+
+Chain of branches looks like this:
+upstream > patch > config > build
+
+
+Setting up local repository
+---------------------------
+git clone https://github.com/maemo-leste/n9xx-linux
+cd  n9xx-linux
+git remote add upstream git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+git remote add stable git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+
+
+Updating to new kernel version
+------------------------------
+# Refresh local repo
+git fetch stable
+# Check what is the current stable
+git tag
+# Set variables
+DEVICE=n900
+OLD=v5.0.3
+NEW=v5.1.2
+# Make new branches
+git checkout -b $DEVICE/$NEW-patch  $DEVICE/$OLD-patch
+git checkout -b $DEVICE/$NEW-config $DEVICE/$OLD-config
+git checkout -b $DEVICE/$NEW-build  $DEVICE/$OLD-build
+# Rebase on top of upstream
+git rebase --onto $NEW  $OLD  $DEVICE/$NEW-patch
+git rebase --onto $DEVICE/$NEW-patch  $DEVICE/$OLD-patch  $DEVICE/$NEW-config
+git rebase --onto $DEVICE/$NEW-config $DEVICE/$OLD-config $DEVICE/$NEW-build
