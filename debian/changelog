@@ -1,3 +1,10 @@
+linux (5.0.5-1) unstable; urgency=medium
+
+  * Follow stable upstream.
+  * Packages added: linux-headers-n900, linux-image-n900-dbg.
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Wed, 27 Mar 2019 14:48:45 +0300
+
 linux (5.0.3-1) unstable; urgency=medium
 
   * Initial Release.
