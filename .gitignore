@@ -65,11 +65,6 @@ modules.builtin
 /*.spec
 
 #
-# Debian directory (make deb-pkg)
-#
-/debian/
-
-#
 # Snap directory (make snap-pkg)
 #
 /snap/
