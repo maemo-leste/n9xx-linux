@@ -1,16 +1,9 @@
 #!/usr/bin/make -f
-%:
-	dh $@
 
 CONFIG = n900_defconfig
 DTB    = omap3-n900.dtb
-
-ARCH = $(DEB_TARGET_ARCH_CPU)
-VERSION := $(shell make -s kernelrelease)
-
-ifeq (,$(filter nostrip,$(DEB_BUILD_OPTIONS)))
-	INSTALL_FLAGS += $(BUILD_FLAGS) INSTALL_MOD_STRIP=1
-endif
+DEV    = n900
+ARCH   = arm
 
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 	NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
@@ -21,29 +14,15 @@ ifneq ($(DEB_BUILD_GNU_TYPE),$(DEB_TARGET_MULTIARCH))
 	BUILD_FLAGS += CROSS_COMPILE=$(DEB_TARGET_MULTIARCH)-
 endif
 
-override_dh_auto_clean:
-	$(MAKE) mrproper
-
-override_dh_auto_configure: debian/postinst
+build:
 	$(MAKE) ARCH=$(ARCH) $(CONFIG)
-
-override_dh_auto_build:
 	$(MAKE) ARCH=$(ARCH) $(BUILD_FLAGS) zImage modules $(DTB)
 
-override_dh_auto_install:
-	$(MAKE) $(INSTALL_FLAGS) INSTALL_MOD_PATH=debian/linux-image-n900 modules_install && \
-	$(RM) debian/linux-image-n900/lib/modules/*/build && \
-	$(RM) debian/linux-image-n900/lib/modules/*/source
-	install -vdm755 debian/linux-image-n900/boot && \
-	cat arch/$(ARCH)/boot/zImage arch/$(ARCH)/boot/dts/$(DTB) > zImage && \
-	mkimage -A $(ARCH) -O linux -T kernel -C none \
-		-a 80008000 -e 80008000 -n zImage -d zImage \
-		debian/linux-image-n900/boot/uImage-$(VERSION) && \
-	install -vm644 .config debian/linux-image-n900/boot/config-$(VERSION) && \
-	install -vm644 System.map debian/linux-image-n900/boot/System.map-$(VERSION)
+binary-arch:
+	$(MAKE) ARCH=$(ARCH) DEV=$(DEV) DTB=$(DTB) $(BUILD_FLAGS) intdeb-pkg
 
-debian/postinst: debian/postinst.in
-	sed 's/@VERSION@/$(VERSION)/g' $< > $@
+clean:
+	rm -rf debian/*tmp debian/files
+	$(MAKE) mrproper
 
-# Commands not to run:
-override_dh_auto_test:
+binary: binary-arch
