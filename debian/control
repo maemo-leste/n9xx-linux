@@ -1,0 +1,20 @@
+Source: linux
+Section: kernel
+Priority: optional
+Maintainer: Arthur Demchenkov <spinal.by@gmail.com>
+Build-Depends:
+ debhelper (>= 10),
+ kmod,
+ bc,
+ flex,
+ bison,
+ libssl-dev:native,
+ liblz4-tool,
+ u-boot-tools,
+Standards-Version: 4.3.0
+Homepage: https://www.kernel.org/
+
+Package: linux-image-n900
+Architecture: armhf armel
+Description: Linux kernel for Nokia N900
+ This package contains the Linux kernel, modules and corresponding other files.
