@@ -1,8 +1,0 @@
-#!/bin/sh
-if [ "$1" = "configure" ]; then
-	ln -svnf uImage-@VERSION@ /boot/uImage
-fi
-
-#DEBHELPER#
-
-exit 0
