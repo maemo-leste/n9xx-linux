@@ -51,10 +51,11 @@ tmpdir="$objtree/debian/tmp"
 kernel_headers_dir="$objtree/debian/hdrtmp"
 libc_headers_dir="$objtree/debian/headertmp"
 dbg_dir="$objtree/debian/dbgtmp"
-packagename=linux-image-$version
-kernel_headers_packagename=linux-headers-$version
+packagename=linux-image-$DEV
+kernel_headers_packagename=linux-headers-$DEV
 libc_headers_packagename=linux-libc-dev
 dbg_packagename=$packagename-dbg
+installed_uimage_path="boot/uImage-$version"
 
 if [ "$ARCH" = "um" ] ; then
 	packagename=user-mode-linux-$version
@@ -97,10 +98,14 @@ cp "$($MAKE -s -f $srctree/Makefile image_name)" "$tmpdir/$installed_image_path"
 
 if is_enabled CONFIG_OF_EARLY_FLATTREE; then
 	# Only some architectures with OF support have this target
-	if [ -d "${srctree}/arch/$SRCARCH/boot/dts" ]; then
-		$MAKE -f $srctree/Makefile INSTALL_DTBS_PATH="$tmpdir/usr/lib/$packagename" dtbs_install
+	if [ -d "${srctree}/arch/$SRCARCH/boot/dts" -a -n "$DTB" ]; then
+		cat "${srctree}/arch/$SRCARCH/boot/dts/$DTB" >> "$tmpdir/$installed_image_path"
 	fi
 fi
+
+mkimage -A $ARCH -O linux -T kernel -C none -a 80008000 -e 80008000 -n zImage \
+	-d "$tmpdir/$installed_image_path" "$tmpdir/$installed_uimage_path"
+rm -f "$tmpdir/$installed_image_path"
 
 if is_enabled CONFIG_MODULES; then
 	INSTALL_MOD_PATH="$tmpdir" $MAKE -f $srctree/Makefile modules_install
@@ -158,6 +163,7 @@ exit 0
 EOF
 	chmod 755 "$tmpdir/DEBIAN/$script"
 done
+sed -e "s,^\(exit 0\)$,ln -snf uImage-$version /boot/uImage\n\n\1," -i "$tmpdir/DEBIAN/postinst"
 
 # Build kernel header package
 (cd $srctree; find . -name Makefile\* -o -name Kconfig\* -o -name \*.pl) > "$objtree/debian/hdrsrcfiles"
@@ -171,17 +177,17 @@ fi
 if is_enabled CONFIG_GCC_PLUGINS; then
 	(cd $objtree; find scripts/gcc-plugins -name \*.so -o -name gcc-common.h) >> "$objtree/debian/hdrobjfiles"
 fi
-destdir=$kernel_headers_dir/usr/src/linux-headers-$version
+destdir=$kernel_headers_dir/usr/src/linux-headers-$DEV
 mkdir -p "$destdir"
 (cd $srctree; tar -c -f - -T -) < "$objtree/debian/hdrsrcfiles" | (cd $destdir; tar -xf -)
 (cd $objtree; tar -c -f - -T -) < "$objtree/debian/hdrobjfiles" | (cd $destdir; tar -xf -)
 (cd $objtree; cp $KCONFIG_CONFIG $destdir/.config) # copy .config manually to be where it's expected to be
-ln -sf "/usr/src/linux-headers-$version" "$kernel_headers_dir/lib/modules/$version/build"
+ln -sf "/usr/src/linux-headers-$DEV" "$kernel_headers_dir/lib/modules/$version/build"
 rm -f "$objtree/debian/hdrsrcfiles" "$objtree/debian/hdrobjfiles"
 
 if [ "$ARCH" != "um" ]; then
 	create_package "$kernel_headers_packagename" "$kernel_headers_dir"
-	create_package "$libc_headers_packagename" "$libc_headers_dir"
+	#create_package "$libc_headers_packagename" "$libc_headers_dir"
 fi
 
 create_package "$packagename" "$tmpdir"
