@@ -18,6 +18,14 @@ git remote add upstream git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/l
 git remote add stable git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
 
 
+Changing default configuration
+------------------------------
+make ARCH=arm n900_defconfig
+make ARCH=arm menuconfig
+make ARCH=arm savedefconfig
+mv defconfig arch/arm/configs/n900_defconfig
+
+
 Updating to new kernel version
 ------------------------------
 # Refresh local repo
