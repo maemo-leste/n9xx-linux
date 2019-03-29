@@ -1,3 +1,10 @@
+linux (5.0.5-3) unstable; urgency=medium
+
+  * Build keyboard driver into kernel
+  * Apply musb fixes
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Fri, 29 Mar 2019 15:07:28 +0300
+
 linux (5.0.5-2) unstable; urgency=medium
 
   * Fix linux-headers-n900 generation in crossbuilding mode.
