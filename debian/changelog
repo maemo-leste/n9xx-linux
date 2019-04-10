@@ -1,3 +1,9 @@
+linux (5.0.7-1) unstable; urgency=medium
+
+  * Add in-kernel config support as a module
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Wed, 10 Apr 2019 18:06:57 +0300
+
 linux (5.0.5-3) unstable; urgency=medium
 
   * Build keyboard driver into kernel
