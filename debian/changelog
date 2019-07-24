@@ -1,3 +1,9 @@
+linux (5.1.1-1) unstable; urgency=medium
+
+  * Add twl4030-vibra
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Wed, 24 Jul 2019 10:04:55 +0100
+
 linux (5.1-1) unstable; urgency=medium
 
   * Follow upstream.
