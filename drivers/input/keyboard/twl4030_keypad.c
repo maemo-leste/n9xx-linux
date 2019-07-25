@@ -219,8 +219,14 @@ static void twl4030_kp_scan(struct twl4030_keypad *kp, bool release_all)
 		if (ret < 0)	/* panic ... */
 			return;
 
+		/* Disabled for N900 n9xx-linux kernel, as this check is counterproductive,
+		   preventing the use of ANY of the shift+fn+ potentially-ambiguous combinations
+		   when the twl4030 already limits ghosting beyond that point internally.
+
 		if (twl4030_is_in_ghost_state(kp, new_state))
 			return;
+		*/
+
 	}
 
 	/* check for changes and print those */
