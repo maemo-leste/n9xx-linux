@@ -219,8 +219,13 @@ static void twl4030_kp_scan(struct twl4030_keypad *kp, bool release_all)
 		if (ret < 0)	/* panic ... */
 			return;
 
-		if (twl4030_is_in_ghost_state(kp, new_state))
-			return;
+		// Disable this overzealous check on n900, as this prevents certain
+		// shift+fn+ key "potentially ambiguous" key-combinations working at all.
+		// limits keymaps.
+		// Maybe this check-disabling should be triggered by n900 DeviceTree or a
+		// Kernel-Parameter or so pushed to upstream?
+		// if (twl4030_is_in_ghost_state(kp, new_state))
+		//	return;
 	}
 
 	/* check for changes and print those */
