@@ -44,3 +44,11 @@ git checkout -b $DEVICE/$NEW-build  $DEVICE/$OLD-build
 git rebase --onto $NEW  $OLD  $DEVICE/$NEW-patch
 git rebase --onto $DEVICE/$NEW-patch  $DEVICE/$OLD-patch  $DEVICE/$NEW-config
 git rebase --onto $DEVICE/$NEW-config $DEVICE/$OLD-config $DEVICE/$NEW-build
+
+
+Crossbuilding the kernel package
+--------------------------------
+sudo dpkg --add-architecture armhf && sudo apt update
+sudo apt install crossbuild-essential-armhf
+sudo apt-get build-dep -aarmhf .
+dpkg-buildpackage -aarmhf -b
