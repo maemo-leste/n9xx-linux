@@ -1,3 +1,10 @@
+linux (5.1.21.1) unstable; urgency=medium
+
+  * DTS: N900: fix onenand timings
+  * Config: enable F2FS support
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Tue, 04 Feb 2020 18:03:34 +0300
+
 linux (5.1.21-1) unstable; urgency=medium
 
   * Input: twl4030-keypad - omit ghost state detection
