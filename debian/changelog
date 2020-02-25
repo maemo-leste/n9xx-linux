@@ -1,3 +1,9 @@
+linux (5.1.21.2) unstable; urgency=medium
+
+  * regulator: twl: voltage lists for vdd1/2 on twl4030
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Tue, 25 Feb 2020 21:54:49 +0300
+
 linux (5.1.21.1) unstable; urgency=medium
 
   * DTS: N900: fix onenand timings
