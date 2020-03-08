@@ -1,3 +1,10 @@
+linux (5.1.21.3) unstable; urgency=medium
+
+  * n900: camera: magic bit makes it work
+  * Config: compile in btrfs driver
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Sun, 08 Mar 2020 14:23:33 +0300
+
 linux (5.1.21.2) unstable; urgency=medium
 
   * regulator: twl: voltage lists for vdd1/2 on twl4030
