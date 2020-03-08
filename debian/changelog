@@ -1,3 +1,9 @@
+linux (5.1.21.4) unstable; urgency=medium
+
+  * Config: enable filesystem capabilities
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Sun, 08 Mar 2020 15:53:05 +0300
+
 linux (5.1.21.3) unstable; urgency=medium
 
   * n900: camera: magic bit makes it work
