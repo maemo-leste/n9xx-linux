@@ -1,3 +1,9 @@
+linux (5.1.21.5) unstable; urgency=medium
+
+  * et8ek8: Support for EXPOSURE_ABSOLUTE
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Mon, 09 Mar 2020 17:31:59 +0300
+
 linux (5.1.21.4) unstable; urgency=medium
 
   * Config: enable filesystem capabilities
