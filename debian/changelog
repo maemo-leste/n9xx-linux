@@ -1,3 +1,9 @@
+linux (5.1.21.6) unstable; urgency=medium
+
+  * Config: add iotop utility support
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Wed, 25 Mar 2020 23:24:41 +0300
+
 linux (5.1.21.5) unstable; urgency=medium
 
   * et8ek8: Support for EXPOSURE_ABSOLUTE
