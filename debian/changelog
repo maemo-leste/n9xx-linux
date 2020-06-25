@@ -1,3 +1,9 @@
+n9xx-linux (5.1.22-1) unstable; urgency=medium
+
+  * Bump tag for latest merge
+
+ -- Ivan J. <parazyd@dyne.org>  Thu, 25 Jun 2020 20:36:48 +0200
+
 n9xx-linux (5.1.21-1) unstable; urgency=medium
 
   * Merge ascii and beowulf
