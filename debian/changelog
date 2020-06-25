@@ -1,3 +1,50 @@
+linux (5.1.21.6) unstable; urgency=medium
+
+  * Config: add iotop utility support
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Wed, 25 Mar 2020 23:24:41 +0300
+
+linux (5.1.21.5) unstable; urgency=medium
+
+  * et8ek8: Support for EXPOSURE_ABSOLUTE
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Mon, 09 Mar 2020 17:31:59 +0300
+
+linux (5.1.21.4) unstable; urgency=medium
+
+  * Config: enable filesystem capabilities
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Sun, 08 Mar 2020 15:53:05 +0300
+
+linux (5.1.21.3) unstable; urgency=medium
+
+  * n900: camera: magic bit makes it work
+  * Config: compile in btrfs driver
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Sun, 08 Mar 2020 14:23:33 +0300
+
+linux (5.1.21.2) unstable; urgency=medium
+
+  * regulator: twl: voltage lists for vdd1/2 on twl4030
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Tue, 25 Feb 2020 21:54:49 +0300
+
+linux (5.1.21.1) unstable; urgency=medium
+
+  * DTS: N900: fix onenand timings
+  * Config: enable F2FS support
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Tue, 04 Feb 2020 18:03:34 +0300
+
+linux (5.1.21-1) unstable; urgency=medium
+
+  * Input: twl4030-keypad - omit ghost state detection
+  * Config: enable vibrator support
+  * Config: enable NAT/masq networking
+  * Config: enable TUN/TAP driver
+
+ -- Arthur Demchenkov <spinal.by@gmail.com>  Tue, 28 Jan 2020 17:25:15 +0300
+
 linux (5.1.2-1) unstable; urgency=medium
 
   * Add iptables masquerade support
