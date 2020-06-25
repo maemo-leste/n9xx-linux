@@ -1,4 +1,4 @@
-Source: linux
+Source: n9xx-linux
 Section: kernel
 Priority: optional
 Maintainer: Arthur Demchenkov <spinal.by@gmail.com>
