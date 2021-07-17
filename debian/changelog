@@ -1,3 +1,9 @@
+n9xx-linux (5.1.22.2-1) unstable; urgency=medium
+
+  * Fix scanning using NL80211 on N900
+
+ -- Merlijn Wajer <merlijn@wizzup.org>  Sat, 17 Jul 2021 15:33:04 +0200
+
 n9xx-linux (5.1.22.1-1) unstable; urgency=medium
 
   * Enable WEXT
